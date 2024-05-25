@@ -1,0 +1,142 @@
+{% extends '__base.html' %}
+{% block page_title %}
+    {{ ticket.title }}
+{% endblock %}
+{% block content %}
+    <div class="container mt-5">
+        <div class="chat-container">
+            <div class="chat-header">
+                Ticket Detail
+            </div>
+            <div class="chat-body">
+                <h4 class="text-center">Title: {{ ticket.title }}</h4>
+                <div class=" {% if ticket.user == user %}from-me text-right{% else %}from-other{% endif %} sender">
+                    {% if ticket.user == user %}:{{ ticket.user|capfirst }}{% else %}{{ ticket.user|capfirst }}
+                        :{% endif %}
+                </div>
+                <div class="message {% if ticket.user == user %}from-me{% else %}from-other{% endif %}">
+                    <div class="content ">{{ ticket.description }}</div>
+                </div>
+                <div class="time small">{{ ticket.created_at }}</div>
+                {% for message in messages %}
+                    <div class="message {% if message.user == user %}from-me{% else %}from-other{% endif %}">
+                        <div class=" {% if message.user == user %}from-me text-right{% else %}from-other{% endif %} sender">
+                            {% if message.user == user %}:{{ message.user|capfirst }}{% else %}{{ message.user|capfirst }}
+                                :{% endif %}
+                        </div>
+                        <div class="content">{{ message.message }}</div>
+                    </div>
+                    <div class="time small my-3 {% if message.user == user %} text-right {% else %} text-left {% endif %}">{{ message.created_at }}</div>
+                {% endfor %}
+            </div>
+            <!-- Chat Input -->
+            <form method="post">
+                {% csrf_token %}
+                <div class="input-group">
+                    {% if ticket.status == "Closed" %}
+                    <textarea class="form-control" name="message" placeholder="This ticket is closed." disabled></textarea>
+                        {% elif ticket.status == 'Open' and "support" not in user.groups.all and "Admin" not in user.groups.all  %}
+                        <textarea class="form-control text-center text-danger" name="message" placeholder="This ticket is  not accepted yet." disabled></textarea>
+
+                    {% else %}
+                <textarea class="form-control" name="message" placeholder="Type Your message" ></textarea>
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="submit">Send</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .chat-container {
+            max-width: 800px;
+            margin: auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .chat-body {
+            padding: 20px;
+            overflow: auto;
+            max-height: 500px;
+
+        }
+
+        .message {
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative; /* Added for timestamp positioning */
+        }
+
+        .message .sender {
+            font-weight: bold;
+        }
+
+        .message .content {
+            margin-top: 5px;
+        }
+
+        .message.from-me .content {
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 10px;
+            padding: 10px 15px;
+            float: right;
+        }
+
+        .message.from-me .time {
+            color: #ccc;
+            float: right;
+        }
+
+
+        .message.from-other .content {
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            padding: 10px 15px;
+            float: left;
+        }
+
+        .message.from-other .sender {
+            color: #333;
+        }
+
+        .message.from-other .time {
+            color: #888;
+            float: left;
+            margin-top: 5px;
+        }
+
+        .input-group-text {
+            background-color: #007bff;
+            color: #fff;
+            border-color: #007bff;
+        }
+
+        .input-group-text:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .form-control {
+            border-color: #007bff;
+        }
+    </style>
+
+
+{% endblock %}

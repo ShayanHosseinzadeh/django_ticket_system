@@ -1,0 +1,32 @@
+{% extends '__base.html' %}
+{% block page_title %}
+	Ticket System
+{% endblock %}
+{% block content %}
+	  <!-- Home Page Content -->
+  <div class="container mt-5">
+    <h1 class="mb-4">Welcome to the Ticket System</h1>
+    <p class="lead">Use this system to create and manage your tickets efficiently.</p>
+
+    <div class="row">
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-body">
+            <p class="card-text">Submit a new ticket for any issues or requests you have.</p>
+            <a href="{% url 'create_ticket' %}" class="btn btn-primary">Create Ticket</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">View Open Tickets</h5>
+            <p class="card-text">View and manage all your open tickets.</p>
+            <a href="{% url 'tickets_list' %}" class="btn btn-primary">View Tickets</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
