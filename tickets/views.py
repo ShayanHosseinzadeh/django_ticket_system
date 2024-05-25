@@ -1,10 +1,11 @@
-from django.shortcuts import render, redirect
-from django.views import generic
-from .forms import TicketForm
-from django.urls import reverse_lazy, reverse
-from django.db.models import Q
+from datetime import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db.models import Q
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy, reverse
+from django.views import generic
 
+from .forms import TicketForm
 from .models import Ticket, Message
 
 
@@ -33,19 +34,20 @@ class TicketListView(LoginRequiredMixin, generic.ListView):
             context['open_tickets'] = Ticket.objects.filter(status='Open')
             context['pending_tickets'] = Ticket.objects.filter(status='Pending')
             context['closed_tickets'] = Ticket.objects.filter(status='Closed')
-            context['role'] = self.request.user.groups.first()
+            context['role'] = [role.name for role in self.request.user.groups.all()]
 
         elif self.request.user.groups.filter(name='support').exists():
             context['open_tickets'] = Ticket.objects.filter(status='Open')
             context['pending_tickets'] = Ticket.objects.filter(Q(status='Pending') | Q(assigned_to=self.request.user))
-            context['closed_tickets'] = Ticket.objects.filter(Q(status='Closed') & Q(user=self.request.user))
-            context['role'] = self.request.user.groups.first()
+            context['closed_tickets'] = Ticket.objects.filter(
+                Q(status='Closed') & Q(user=self.request.user) | Q(assigned_to=self.request.user))
+            context['role'] = [role.name for role in self.request.user.groups.all()]
 
         else:
             context['open_tickets'] = Ticket.objects.filter(Q(status='Open') & Q(user=self.request.user))
             context['pending_tickets'] = Ticket.objects.filter(Q(status='Pending') & Q(user=self.request.user))
             context['closed_tickets'] = Ticket.objects.filter(Q(status='Closed') & Q(user=self.request.user))
-            context['role'] = self.request.user.groups.first()
+            context['role'] = [role.name for role in self.request.user.groups.all()]
 
         return context
 
@@ -86,3 +88,36 @@ class TicketDeleteView(UserPassesTestMixin, LoginRequiredMixin, generic.DeleteVi
 
     def test_func(self):
         return self.request.user.groups.filter(name='Admin').exists() or self.request.user.is_superuser
+
+
+class TicketAcceptView(UserPassesTestMixin, LoginRequiredMixin, generic.View):
+    model = Ticket
+
+    def get(self, request, *args, **kwargs):
+        ticket = get_object_or_404(Ticket, id=self.kwargs['pk'])
+        ticket.status = 'Pending'
+        ticket.assigned_to = self.request.user
+        ticket.accepted_at = datetime.now()
+        ticket.save()
+        return redirect(reverse('ticket_detail', kwargs={'pk': self.kwargs['pk']}))
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='support').exists() or self.request.user.groups.filter(
+            name='Admin').exists() or self.request.user.is_superuser
+
+
+class TicketCloseView(UserPassesTestMixin, LoginRequiredMixin, generic.View):
+    model = Ticket
+
+    def get(self, request, *args, **kwargs):
+        ticket = get_object_or_404(Ticket, id=self.kwargs['pk'])
+        ticket.status = 'Closed'
+        ticket.closed_by = self.request.user
+        ticket.closed_at = datetime.now()
+        ticket.save()
+        return redirect(reverse('tickets_list'))
+
+    def test_func(self):
+        return self.request.user.groups.filter(
+            name='Admin').exists() or self.request.user.is_superuser or self.request.user.groups.filter(
+            name='support').exists()

@@ -3,7 +3,6 @@
     Tickets
 {% endblock %}
 {% block content %}
-    {{ role }}
     <div class="container mt-5">
         <!-- Open Tickets -->
         <div class="card mb-4">
@@ -21,7 +20,7 @@
                             <th scope="col">Owner</th>
                         {% endif %}
                         <th scope="col">Status</th>
-                        <th scope="col">Actions</th>
+                        <th scope="col" class="text-center">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -31,26 +30,29 @@
                                 <th scope="row">{{ forloop.counter }}</th>
                                 <td>{{ ticket.title }}</td>
                                 <td>{{ ticket.description }}</td>
-                                {% if user.is_staff or 'Admin' in user.groups.all %}
+                                {% if user.is_staff or 'Admin' in role %}
                                     <td>{{ ticket.user|capfirst }}</td>
                                 {% endif %}
                                 <td><span class="badge badge-primary">{{ ticket.status }}</span></td>
-                                <td>
-                                    {% if "Admin" in user.groups.all or user.is_superuser %}
+                                <td class="text-center">
+                                    {% if "Admin" in role or user.is_superuser %}
                                         <a href="{% url 'ticket_delete' ticket.id %}">
                                             <button class="btn btn-sm btn-danger">Delete</button>
 
                                         </a>
                                     {% endif %}
-                                    {% if "support" not in user.groups.all and "Admin" not in user.groups.all and not user.is_staff %}
+                                    {% if "support" not in role and "Admin" not in role or not user.is_staff or ticket.user == user %}
                                         <a href="{% url 'ticket_detail' ticket.id %}">
                                             <button class="btn btn-sm btn-primary">View</button>
                                         </a>
                                     {% endif %}
-                                    {% if "support" in user.groups.all or  "Admin" in user.groups.all or user.is_superuser %}
-                                        <a href="">
+                                    {% if "support" in role and ticket.user != user or  "Admin" in role or user.is_superuser  %}
+                                        <a href="{% url 'ticket_accept' ticket.id %}">
                                             <button class="btn btn-sm btn-success">Accept</button>
+
                                         </a>
+
+
                                     {% endif %}
 
                                 </td>
@@ -58,7 +60,7 @@
 
                         {% endfor %}
                     {% else %}
-                        <td colspan="5" class="text-center h3 text-danger"> No tickets</td>
+                        <td colspan="8" class="text-center h3 text-danger"> No tickets</td>
 
                     {% endif %}
 
@@ -79,7 +81,7 @@
                         <th scope="col">#</th>
                         <th scope="col">Title</th>
                         <th scope="col">Description</th>
-                        {% if user.is_staff or 'Admin' in user.groups.all %}
+                        {% if user.is_staff or 'Admin' in role %}
                             <th scope="col">Owner</th>
                         {% endif %}
                         <th scope="col">Status</th>
@@ -96,15 +98,15 @@
                                     <th scope="row">{{ forloop.counter }}</th>
                                     <td>{{ ticket.title }}</td>
                                     <td>{{ ticket.description }}</td>
-                                    {% if user.is_staff or 'Admin' in user.groups.all %}
+                                    {% if user.is_staff or 'Admin' in role %}
                                         <td>{{ ticket.user|capfirst }}</td>
                                     {% endif %}
                                     <td><span class="badge badge-warning">{{ ticket.status }}</span></td>
                                     <td>{{ ticket.assigned_to|capfirst }}</td>
                                     <td>{{ ticket.accepted_at }}</td>
                                     <td>
-                                        {% if "Admin" in user.groups.all or user.is_staff %}
-                                            <a href="{% url 'ticket_detail' ticket.id %}">
+                                        {% if "Admin" in role or user.is_staff or "support" in role and ticket.user != user %}
+                                            <a href="{% url 'ticket_close' ticket.id %}">
                                                 <button class="btn btn-sm btn-danger">Close</button>
 
                                             </a>
@@ -118,7 +120,7 @@
                             {% endif %}
                         {% endfor %}
                     {% else %}
-                        <td colspan="7" class="text-center h3 text-danger"> No tickets</td>
+                        <td colspan="8" class="text-center h3 text-danger"> No tickets</td>
                     {% endif %}
 
                     </tbody>
@@ -138,6 +140,7 @@
                         <th scope="col">#</th>
                         <th scope="col">Title</th>
                         <th scope="col">Description</th>
+                        <th scope="col">owner</th>
                         <th scope="col">Status</th>
                         <th scope="col">Closed at</th>
                         <th scope="col">Closed by</th>
@@ -145,7 +148,6 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <!-- Example open ticket entries -->
                     {% if closed_tickets %}
                         {% for ticket in closed_tickets %}
                             {% if 'Closed' in ticket.status %}
@@ -153,6 +155,7 @@
                                     <th scope="row">{{ forloop.counter }}</th>
                                     <td>{{ ticket.title }}</td>
                                     <td>{{ ticket.description }}</td>
+                                    <td>{{ ticket.user }}</td>
                                     <td><span class="badge badge-danger">{{ ticket.status }}</span></td>
                                     <td>{{ ticket.closed_at }}</td>
                                     <td>{{ ticket.closed_by|capfirst }}</td>
@@ -166,7 +169,7 @@
                             {% endif %}
                         {% endfor %}
                     {% else %}
-                        <td colspan="7" class="text-center h3 text-danger"> No tickets</td>
+                        <td colspan="8" class="text-center h3 text-danger"> No tickets</td>
                     {% endif %}
 
                     </tbody>
@@ -174,5 +177,10 @@
             </div>
         </div>
     </div>
-
+    <style>
+    .card-body  {
+        max-height: 250px;
+        overflow: auto;
+    }
+    </style>
 {% endblock %}
