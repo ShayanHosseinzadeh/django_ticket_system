@@ -16,9 +16,7 @@
                         <th scope="col">#</th>
                         <th scope="col">Title</th>
                         <th scope="col">Description</th>
-                        {% if user.is_staff or 'Admin' in user.groups.all %}
                             <th scope="col">Owner</th>
-                        {% endif %}
                         <th scope="col">Status</th>
                         <th scope="col" class="text-center">Actions</th>
                     </tr>
@@ -30,9 +28,7 @@
                                 <th scope="row">{{ forloop.counter }}</th>
                                 <td>{{ ticket.title }}</td>
                                 <td>{{ ticket.description }}</td>
-                                {% if user.is_staff or 'Admin' in role %}
                                     <td>{{ ticket.user|capfirst }}</td>
-                                {% endif %}
                                 <td><span class="badge badge-primary">{{ ticket.status }}</span></td>
                                 <td class="text-center">
                                     {% if "Admin" in role or user.is_superuser %}
@@ -41,12 +37,12 @@
 
                                         </a>
                                     {% endif %}
-                                    {% if "support" not in role and "Admin" not in role or not user.is_staff or ticket.user == user %}
+                                    {% if "support" not in role and "Admin" not in role and not user.is_staff or ticket.user == user %}
                                         <a href="{% url 'ticket_detail' ticket.id %}">
                                             <button class="btn btn-sm btn-primary">View</button>
                                         </a>
                                     {% endif %}
-                                    {% if "support" in role and ticket.user != user or  "Admin" in role or user.is_superuser  %}
+                                    {% if "support" in role and ticket.user != user or  "Admin" in role and ticket.user != user or user.is_superuser  and ticket.user != user %}
                                         <a href="{% url 'ticket_accept' ticket.id %}">
                                             <button class="btn btn-sm btn-success">Accept</button>
 
