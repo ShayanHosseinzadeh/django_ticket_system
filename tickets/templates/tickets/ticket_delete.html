@@ -1,0 +1,16 @@
+{% extends '__base.html' %}
+{% block page_title %}
+	Delete {{ ticket.title }} ?
+{% endblock %}
+{% block content %}
+	  <!-- Home Page Content -->
+  <div class="container mt-5">
+      <form action="" method="post">
+          {% csrf_token %}
+          <h3>Are you sure you want to delete {{ ticket.title }} ? </h3>
+          <button class="btn btn-success" type="submit">Yes</button>
+          <a href="{% url 'tickets_list' %}"><button  type="button" class="btn btn-danger">No</button></a>
+      </form>
+  </div>
+
+{% endblock %}

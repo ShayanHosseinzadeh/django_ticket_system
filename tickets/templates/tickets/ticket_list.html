@@ -37,16 +37,16 @@
                                 <td><span class="badge badge-primary">{{ ticket.status }}</span></td>
                                 <td>
                                     {% if "Admin" in user.groups.all or user.is_superuser %}
-                                        <a href="">
+                                        <a href="{% url 'ticket_delete' ticket.id %}">
                                             <button class="btn btn-sm btn-danger">Delete</button>
 
                                         </a>
                                     {% endif %}
-                                    {% if "support" not in user.groups.all and "Admin" not in user.groups.all and not user.is_staff  %}
-                                    	<a href="{% url 'ticket_detail' ticket.id %}">
-                                        <button class="btn btn-sm btn-primary">View</button>
-                                    </a>
-                                    {% endif %} 
+                                    {% if "support" not in user.groups.all and "Admin" not in user.groups.all and not user.is_staff %}
+                                        <a href="{% url 'ticket_detail' ticket.id %}">
+                                            <button class="btn btn-sm btn-primary">View</button>
+                                        </a>
+                                    {% endif %}
                                     {% if "support" in user.groups.all or  "Admin" in user.groups.all or user.is_superuser %}
                                         <a href="">
                                             <button class="btn btn-sm btn-success">Accept</button>

@@ -77,3 +77,12 @@ class TicketDetailView(UserPassesTestMixin, LoginRequiredMixin, generic.DetailVi
         elif user == ticket.user:
             return True
         return False
+
+
+class TicketDeleteView(UserPassesTestMixin, LoginRequiredMixin, generic.DeleteView):
+    model = Ticket
+    template_name = 'tickets/ticket_delete.html'
+    success_url = reverse_lazy('tickets_list')
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='Admin').exists() or self.request.user.is_superuser
