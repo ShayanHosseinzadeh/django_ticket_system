@@ -1,5 +1,6 @@
-from django.db import models
+
 from django.contrib.auth import get_user_model
+from django.db import models
 from django.urls import reverse
 
 class Ticket(models.Model):
@@ -16,18 +17,19 @@ class Ticket(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     accepted_at = models.DateTimeField(blank=True, null=True, verbose_name="Accepted at")
     closed_at = models.DateTimeField(blank=True, null=True, verbose_name="Closed at")
-    closed_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True,blank=True, related_name="closed_tickets", verbose_name="closed by")
+    closed_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True,
+                                  related_name="closed_tickets", verbose_name="closed by")
     status = models.CharField(max_length=7, choices=STATUS_CHOICES, default="Open", verbose_name="Status")
 
     def __str__(self):
         return self.title
 
     def get_absolute_url(self):
-        return reverse('ticket_detail',args=[self.id])
+        return reverse('ticket_detail', args=[self.id])
+
 
 class Message(models.Model):
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='messages')
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="messages")
     message = models.TextField(blank=False, null=False, verbose_name="Message")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
-
