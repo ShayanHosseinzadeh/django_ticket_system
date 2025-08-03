@@ -1,16 +1,78 @@
 {% extends '__base.html' %}
-{% block page_title %}
-	Delete {{ ticket.title }} ?
-{% endblock %}
-{% block content %}
-	  <!-- Home Page Content -->
-  <div class="container mt-5">
-      <form action="" method="post">
-          {% csrf_token %}
-          <h3>Are you sure you want to delete {{ ticket.title }} ? </h3>
-          <button class="btn btn-success" type="submit">Yes</button>
-          <a href="{% url 'tickets_list' %}"><button  type="button" class="btn btn-danger">No</button></a>
-      </form>
-  </div>
+{% load static %}
+{% load i18n %}
 
+{% block page_title %}
+    Delete {{ ticket.title }} ?
+{% endblock %}
+
+{% block content %}
+    <style>
+        .card {
+            background-color: #1a1e22 !important;
+            border: 1px solid #495057 !important;
+        }
+
+        .card-header {
+            background-color: #2b3035 !important;
+            font-weight: bold;
+            color: #dc3545 !important; /* Red for deletion actions */
+        }
+
+        .btn-confirm {
+            background-color: #dc3545 !important; /* Red for "Yes, delete" button */
+            border-color: #dc3545 !important;
+            color: #fff !important;
+            transition: all 0.3s ease;
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+        }
+
+        .btn-confirm:hover {
+            background-color: #c82333 !important;
+            border-color: #c82333 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.4) !important;
+        }
+
+        .btn-cancel {
+            background-color: transparent !important;
+            border-color: #495057 !important;
+            color: #f8f9fa !important;
+            transition: all 0.3s ease;
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+        }
+
+        .btn-cancel:hover {
+            background-color: #495057 !important;
+            border-color: #495057 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(73, 80, 87, 0.4) !important;
+        }
+    </style>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card shadow-lg rounded-4">
+                    <div class="card-header rounded-top-4">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Delete Ticket
+                    </div>
+                    <div class="card-body text-center">
+                        <h3 class="text-white mb-4">Are you sure you want to delete the ticket: <span class="text-danger">{{ ticket.title }}</span>?</h3>
+                        <p class="text-muted mb-4">This action cannot be undone.</p>
+                        <form action="" method="post" class="d-flex justify-content-center">
+                            {% csrf_token %}
+                            <button class="btn btn-confirm me-3" type="submit">
+                                <i class="bi bi-trash-fill me-2"></i>Yes, Delete
+                            </button>
+                            <a href="{% url 'tickets_list' %}" class="btn btn-cancel" role="button">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

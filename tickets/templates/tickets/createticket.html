@@ -1,32 +1,99 @@
 {% extends '__base.html' %}
+{% load static %}
+{% load i18n %}
+
 {% block page_title %}
-    Create ticket
+    Create Ticket
 {% endblock %}
+
 {% block content %}
-	  <!-- Home Page Content -->
-  <div class="container mt-5">
-    <div class="row">
-      <div class="col-md-8 offset-md-2">
-        <div class="card">
-          <div class="card-header">
-            Create a New Ticket
-          </div>
-          <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-              <div class="form-group">
-                <label for="ticketTitle">Title</label>
-                <input type="text" name="title" class="form-control" id="ticketTitle" placeholder="Enter title" required>
-              </div>
-              <div class="form-group">
-                <label for="ticketDescription">Description</label>
-                <textarea class="form-control" name="description" id="ticketDescription" rows="3" placeholder="Enter description" required></textarea>
-              </div>
-              <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
-          </div>
+    <style>
+        :root {
+            --blue: #007bff; /* A classic blue */
+            --dark-gray: #2b3035;
+        }
+
+        .card-header,
+        .btn-submit {
+            color: var(--blue) !important;
+        }
+
+        .card {
+            background-color: #1a1e22 !important;
+            border: 1px solid #495057 !important;
+        }
+
+        .card-header {
+            background-color: #2b3035 !important;
+            font-weight: bold;
+        }
+
+        .form-label {
+            color: #fff !important; /* Explicitly set label color to white */
+        }
+
+        .form-control {
+            background-color: var(--dark-gray) !important;
+            border: 1px solid #495057 !important;
+            color: #f8f9fa !important;
+        }
+
+        .form-control:focus {
+            background-color: var(--dark-gray) !important;
+            border-color: var(--blue) !important;
+            box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25) !important;
+            color: #f8f9fa !important;
+        }
+
+        /* Styling for placeholders */
+        .form-control::placeholder {
+            color: #aaa !important; /* A light gray for better visibility */
+            opacity: 1 !important; /* Ensures the color is applied */
+        }
+
+        .btn-submit {
+            background-color: var(--blue) !important;
+            border-color: var(--blue) !important;
+            color: #fff !important;
+            transition: all 0.3s ease;
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+        }
+
+        .btn-submit:hover {
+            background-color: #0056b3 !important;
+            border-color: #0056b3 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4) !important;
+        }
+    </style>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card shadow-lg rounded-4">
+                    <div class="card-header rounded-top-4">
+                        <i class="bi bi-plus-circle me-2"></i>Create a New Ticket
+                    </div>
+                    <div class="card-body">
+                        <form method="post" class="mt-3">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="ticketTitle" class="form-label">Title</label>
+                                <input type="text" name="title" class="form-control" id="ticketTitle" placeholder="Enter a descriptive title" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="ticketDescription" class="form-label">Description</label>
+                                <textarea class="form-control" name="description" id="ticketDescription" rows="5" placeholder="Describe your issue or request in detail" required></textarea>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-submit mt-3">
+                                    <i class="bi bi-send-fill me-2"></i>Submit Ticket
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 {% endblock %}

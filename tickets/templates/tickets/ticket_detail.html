@@ -1,163 +1,242 @@
 {% extends '__base.html' %}
+{% load static %}
+{% load i18n %}
+
 {% block page_title %}
-    {{ ticket.title }}
+    Ticket: {{ ticket.title }}
 {% endblock %}
+
 {% block content %}
-    <div class="container mt-5">
-        <div class="chat-container">
-            <div class="chat-header">
-                Ticket Detail
-                Ticket Status : <span class="text-warning font-weight-bold">{{ ticket.status }}</span>
-            </div>
-            <div class="chat-body">
-                <h4 class="text-center">Title: {{ ticket.title }}</h4>
+<style>
+    :root {
+        --blue: #0dcaf0; /* brighter blue */
+    }
+
+    .chat-card {
+        background-color: #1e1e2f;
+        border: 1px solid #444;
+        border-radius: 0.75rem;
+    }
+
+    .chat-header {
+        background-color: #2c2f4a;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #444;
+    }
+    .chat-header h5 {
+        color: var(--blue) !important;
+    }
+
+    .chat-body {
+        padding: 1.5rem;
+        overflow-y: auto;
+        max-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        background-color: #202235;
+    }
+
+    .message-box {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .message-box.from-me {
+        align-items: flex-end;
+    }
+
+    .message-content {
+        padding: 0.75rem 1.25rem;
+        border-radius: 1rem;
+        max-width: 75%;
+        word-wrap: break-word;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        font-size: 0.95rem;
+    }
+
+    .message-content.from-me {
+        background-color: var(--blue);
+        color: #fff;
+        border-bottom-right-radius: 0.25rem;
+    }
+
+    .message-content.from-other {
+        background-color: #343a40;
+        color: #fff;
+        border-bottom-left-radius: 0.25rem;
+    }
+
+    .sender-info {
+        font-size: 0.8rem;
+        color: #aaa;
+        margin-bottom: 0.25rem;
+    }
+
+    .message-time {
+        font-size: 0.75rem;
+        color: #ccc;
+        margin-top: 0.25rem;
+    }
+
+    .form-control-chat {
+        background-color: #2c2f4a;
+        border: 1px solid #495057;
+        color: #fff; /* white input text */
+        resize: none;
+        height: 42px;
+        padding: 8px 12px;
+        font-size: 1rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+    }
+
+    .form-control-chat::placeholder {
+        color: #aaa !important; /* lighter placeholder */
+        opacity: 1 !important;
+    }
+
+    .form-control-chat:focus {
+        background-color: #2c2f4a;
+        border-color: var(--blue);
+        box-shadow: 0 0 0 0.25rem rgba(13, 202, 240, 0.4);
+        outline: none;
+        color: #fff;
+    }
+
+    .btn-send, .btn-close-ticket {
+        height: 42px;
+        padding: 0 1rem;
+        font-size: 0.95rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        user-select: none;
+        cursor: pointer;
+    }
+
+    .btn-send {
+        background-color: var(--blue);
+        border: 1px solid var(--blue);
+        color: #fff;
+        transition: background-color 0.3s, box-shadow 0.3s;
+    }
+
+    .btn-send:hover:not(:disabled) {
+        background-color: #0b5ed7;
+        border-color: #0a58ca;
+        box-shadow: 0 0 10px rgba(13, 110, 253, 0.5);
+    }
+
+    .btn-send:disabled {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .btn-close-ticket {
+        background-color: #dc3545;
+        border: 1px solid #dc3545;
+        color: #fff;
+        transition: background-color 0.3s, box-shadow 0.3s;
+        text-decoration: none;
+    }
+
+    .btn-close-ticket:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+        box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+        text-decoration: none;
+        color: #fff;
+    }
+
+    .card-footer form.d-flex {
+        gap: 0.5rem;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="card chat-card shadow-lg">
+        <div class="card-header chat-header">
+            <h5><i class="bi bi-ticket-detailed me-2"></i>Ticket #{{ ticket.pk }} - {{ ticket.title }}</h5>
+            <div class="d-flex align-items-center">
+                <span class="badge rounded-pill me-2
+                    {% if ticket.status == 'Open' %}bg-success
+                    {% elif ticket.status == 'Pending' %}bg-warning text-dark
+                    {% else %}bg-danger{% endif %}">
+                    {{ ticket.status }}
+                </span>
                 {% if ticket.status == 'Pending' %}
-                    <h6 class="text-center">Accepted by: {{ ticket.assigned_to|capfirst }}</h6>
+                    <span class="text-muted small">Assigned to: {{ ticket.assigned_to|capfirst }}</span>
+                {% elif ticket.status == 'Closed' %}
+                    <span class="text-muted small">Closed by: {{ ticket.closed_by|capfirst }}</span>
                 {% endif %}
-                {% if ticket.status == 'Closed' %}
-                    <h6 class="text-center">Closed by: {{ ticket.closed_by|capfirst }}</h6>
-
-                {% endif %}
-                <div class=" {% if ticket.user == user %}from-me text-right{% else %}from-other{% endif %} sender">
-                    {% if ticket.user == user %}:{{ ticket.user|capfirst }}{% else %}{{ ticket.user|capfirst }}
-                        :{% endif %}
-                </div>
-                <div class="message {% if ticket.user == user %}from-me{% else %}from-other{% endif %}">
-                    <div class="content ">{{ ticket.description }}</div>
-                </div>
-                <div class="time small my-3 {% if ticket.user == user %} text-right {% else %} text-left {% endif %}">{{ ticket.created_at }}</div>
-                {% for message in messages %}
-                    <div class="message {% if message.user == user %}from-me{% else %}from-other{% endif %}">
-
-                        <div class=" {% if message.user == user %}from-me text-right{% else %}from-other{% endif %} sender">
-                            <div class="role text-danger font-weight-bold">
-                                {{ message.user.groups.first|capfirst }}
-                            </div>
-                            {% if message.user == user %}:
-                                {{ message.user|capfirst }} {% else %}{{ message.user|capfirst }}
-                                :{% endif %}
-                        </div>
-                        <div class="content">{{ message.message }}</div>
-                    </div>
-                    <div class="time small my-3 {% if message.user == user %} text-right {% else %} text-left {% endif %}">{{ message.created_at }}</div>
-                {% endfor %}
             </div>
-            <!-- Chat Input -->
-            <form method="post">
-                {% csrf_token %}
-                <div class="input-group">
-                    {% if ticket.status == "Closed" %}
-                        <textarea class="form-control" name="message" placeholder="This ticket is closed."
-                                  disabled></textarea>
-                    {% elif ticket.status == 'Open' and "support" not in user.groups.all and "Admin" not in user.groups.all %}
-                        <textarea class="form-control text-center text-danger" name="message"
-                                  placeholder="This ticket is  not accepted yet." disabled></textarea>
+        </div>
 
-                    {% else %}
-                        <textarea class="form-control" name="message" placeholder="Type Your message"></textarea>
-                        <div class="input-group-append">
-                            <button class="btn btn-primary" type="submit">Send</button>
-                            {% if "Admin" == user.groups.all.first|safe or "support" == user.groups.all.first|safe or user.is_staff %}
-                                <a href="{% url 'ticket_close' ticket.id %}">
-                                    <button class="btn btn-danger h-100" type="button">Close</button>
-                                </a>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-
+        <div class="card-body chat-body">
+            <!-- Ticket Description -->
+            <div class="message-box from-other">
+                <div class="sender-info">
+                    <span class="fw-bold text-success">{{ ticket.user|capfirst }}</span>:
                 </div>
-            </form>
+                <div class="message-content from-other">
+                    {{ ticket.description }}
+                </div>
+                <div class="message-time">{{ ticket.created_at|date:"M d, Y P" }}</div>
+            </div>
+
+            <!-- Ticket Messages -->
+            {% for message in ticket_messages %}
+                <div class="message-box {% if message.user == user %}from-me{% else %}from-other{% endif %}">
+                    <div class="sender-info">
+                        {% if message.user == user %}
+                            <span class="fw-bold text-info">You:</span>
+                        {% else %}
+                            <span class="fw-bold text-success">{{ message.user|capfirst }}</span>
+                            <span class="text-danger small">({{ message.user.groups.first|capfirst }})</span>:
+                        {% endif %}
+                    </div>
+                    <div class="message-content {% if message.user == user %}from-me{% else %}from-other{% endif %}">
+                        {{ message.message }}
+                    </div>
+                    <div class="message-time">{{ message.created_at|date:"M d, Y P" }}</div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="card-footer bg-dark border-top-0 rounded-bottom">
+          <form method="post" class="d-flex align-items-center">
+            {% csrf_token %}
+
+            {% if ticket.status == "Closed" %}
+              <textarea class="form-control-chat flex-grow-1" placeholder="This ticket is closed." disabled></textarea>
+              <button class="btn btn-secondary btn-send" type="button" disabled>Send</button>
+            {% else %}
+              <textarea name="message" class="form-control form-control-chat flex-grow-1" rows="1" placeholder="Type your message..." required></textarea>
+
+              <button class="btn btn-send" type="submit" style="min-width: 80px;">
+                Send
+              </button>
+
+              {% if user.groups.all %}
+                {% for group in user.groups.all %}
+                  {% if group.name == 'Admin' or group.name == 'support' or user.is_superuser %}
+                    <a href="{% url 'ticket_close' ticket.id %}" class="btn btn-close-ticket" style="min-width: 80px;">
+                      Close
+                    </a>
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endif %}
+          </form>
         </div>
     </div>
-
-    <style>
-
-        .container {
-            margin-top: 50px;
-        }
-
-        .chat-container {
-            max-width: 800px;
-            margin: auto;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .chat-header {
-            background-color: #007bff;
-            color: #fff;
-            padding: 15px;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .chat-body {
-            padding: 20px;
-            overflow: auto;
-            max-height: 500px;
-
-        }
-
-        .message {
-            margin-bottom: 20px;
-            overflow: hidden;
-            position: relative; /* Added for timestamp positioning */
-        }
-
-        .message .sender {
-            font-weight: bold;
-        }
-
-        .message .content {
-            margin-top: 5px;
-        }
-
-        .message.from-me .content {
-            background-color: #007bff;
-            color: #fff;
-            border-radius: 10px;
-            padding: 10px 15px;
-            float: right;
-        }
-
-        .message.from-me .time {
-            color: #ccc;
-            float: right;
-        }
-
-
-        .message.from-other .content {
-            background-color: #f0f0f0;
-            border-radius: 10px;
-            padding: 10px 15px;
-            float: left;
-        }
-
-        .message.from-other .sender {
-            color: #333;
-        }
-
-        .message.from-other .time {
-            color: #888;
-            float: left;
-            margin-top: 5px;
-        }
-
-        .input-group-text {
-            background-color: #007bff;
-            color: #fff;
-            border-color: #007bff;
-        }
-
-        .input-group-text:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-        }
-
-        .form-control {
-            border-color: #007bff;
-        }
-    </style>
-
-
+</div>
 {% endblock %}

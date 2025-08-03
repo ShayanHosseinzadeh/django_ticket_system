@@ -1,22 +1,171 @@
 {% extends '__base.html' %}
+{% load static %}
+{% load i18n %}
+
 {% block page_title %}
     Tickets
 {% endblock %}
+
 {% block content %}
+    <style>
+        .card {
+            background-color: #1a1e22 !important;
+            border: 1px solid #495057 !important;
+        }
+
+        .card-header {
+            background-color: #2b3035 !important;
+            font-weight: bold !important;
+            color: #f8f9fa !important;
+            display: flex !important;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body {
+            max-height: 400px;
+            overflow-y: auto;
+            color: #ced4da;
+        }
+
+        .table {
+            color: #ced4da;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #343a40;
+        }
+
+        /* Badge Status */
+        .badge-status-open {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .badge-status-pending {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .badge-status-closed {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* Buttons */
+        .btn-action {
+            border-radius: 50px;
+            padding: 0.35rem 1.2rem;
+            font-weight: 500;
+            min-width: 80px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-view {
+            background-color: var(--blue, #007bff);
+            border-color: var(--blue, #007bff);
+            color: white;
+        }
+
+        .btn-view:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-accept {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+
+        .btn-accept:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+            border-color: #c82333;
+            color: white;
+        }
+
+        /* Close button style (replace btn-close to avoid X icon) */
+        .btn-close-ticket {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+        .btn-close-ticket:hover {
+            background-color: #c82333;
+            border-color: #c82333;
+            color: white;
+        }
+
+        .text-danger {
+            color: #dc3545 !important;
+        }
+
+        /* Centered table headers */
+        .table thead th {
+            text-align: center;
+        }
+
+        /* Centered table cell content */
+        .table tbody td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        /* Left align first 4 columns */
+        .table tbody td:first-child,
+        .table tbody td:nth-child(2),
+        .table tbody td:nth-child(3),
+        .table tbody td:nth-child(4) {
+            text-align: left;
+        }
+
+        .table .actions-column {
+            text-align: center;
+        }
+
+        /* Centered card headers */
+        .card-header-center {
+            justify-content: center;
+        }
+    </style>
+
     <div class="container mt-5">
+
         <!-- Open Tickets -->
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                Open Tickets
+        <div class="card mb-4 shadow-lg rounded-4">
+            <div class="card-header rounded-top-4 card-header-center">
+                <i class="bi bi-folder2-open me-2"></i>Open Tickets
             </div>
             <div class="card-body">
-                <table class="table table-hover">
+                <table class="table table-hover table-dark">
                     <thead>
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">Title</th>
-                        <th scope="col">Description</th>
-                            <th scope="col">Owner</th>
+                        <th scope="col">Owner</th>
                         <th scope="col">Status</th>
                         <th scope="col" class="text-center">Actions</th>
                     </tr>
@@ -27,156 +176,130 @@
                             <tr>
                                 <th scope="row">{{ forloop.counter }}</th>
                                 <td>{{ ticket.title }}</td>
-                                <td>{{ ticket.description }}</td>
-                                    <td>{{ ticket.user|capfirst }}</td>
-                                <td><span class="badge badge-primary">{{ ticket.status }}</span></td>
+                                <td>{{ ticket.user|capfirst }}</td>
+                                <td><span class="badge badge-status-open rounded-pill">{{ ticket.status }}</span></td>
                                 <td class="text-center">
-                                    {% if "Admin" in role or user.is_superuser %}
-                                        <a href="{% url 'ticket_delete' ticket.id %}">
-                                            <button class="btn btn-sm btn-danger">Delete</button>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        {% if 'Admin' in role or user.is_superuser %}
+                                            <a href="{% url 'ticket_delete' ticket.id %}"
+                                               class="btn btn-action btn-delete">Delete</a>
+                                        {% endif %}
 
-                                        </a>
-                                    {% endif %}
-                                    {% if "support" not in role and "Admin" not in role and not user.is_staff or ticket.user == user %}
-                                        <a href="{% url 'ticket_detail' ticket.id %}">
-                                            <button class="btn btn-sm btn-primary">View</button>
-                                        </a>
-                                    {% endif %}
-                                    {% if "support" in role and ticket.user != user or  "Admin" in role and ticket.user != user or user.is_superuser  and ticket.user != user %}
-                                        <a href="{% url 'ticket_accept' ticket.id %}">
-                                            <button class="btn btn-sm btn-success">Accept</button>
+                                        {% if user.is_authenticated and ticket.user == user %}
+                                            <a href="{% url 'ticket_detail' ticket.id %}"
+                                               class="btn btn-action btn-view">View</a>
+                                        {% endif %}
 
-                                        </a>
-
-
-                                    {% endif %}
-
+                                        {% if 'support' in role or 'Admin' in role and ticket.user != user %}
+                                            <a href="{% url 'ticket_accept' ticket.id %}"
+                                               class="btn btn-action btn-accept">Accept</a>
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
-
                         {% endfor %}
                     {% else %}
-                        <td colspan="8" class="text-center h3 text-danger"> No tickets</td>
-
+                        <tr>
+                            <td colspan="5" class="text-center h5 text-danger">No open tickets.</td>
+                        </tr>
                     {% endif %}
-
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- pending Tickets -->
-        <div class="card mb-4">
-            <div class="card-header bg-warning text-white">
-                Pending Tickets
+        <!-- Pending Tickets -->
+        <div class="card mb-4 shadow-lg rounded-4">
+            <div class="card-header rounded-top-4 card-header-center">
+                <i class="bi bi-clock-fill me-2"></i>Pending Tickets
             </div>
             <div class="card-body">
-                <table class="table table-hover">
+                <table class="table table-hover table-dark">
                     <thead>
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">Title</th>
-                        <th scope="col">Description</th>
-                        {% if user.is_staff or 'Admin' in role %}
-                            <th scope="col">Owner</th>
-                        {% endif %}
+                        <th scope="col">Owner</th>
                         <th scope="col">Status</th>
                         <th scope="col">Assigned to</th>
-                        <th scope="col">Accepted date</th>
+                        <th scope="col">Accepted Date</th>
                         <th scope="col">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% if pending_tickets %}
                         {% for ticket in pending_tickets %}
-                            {% if 'Pending' in ticket.status %}
-                                <tr>
-                                    <th scope="row">{{ forloop.counter }}</th>
-                                    <td>{{ ticket.title }}</td>
-                                    <td>{{ ticket.description }}</td>
-                                    {% if user.is_staff or 'Admin' in role %}
-                                        <td>{{ ticket.user|capfirst }}</td>
-                                    {% endif %}
-                                    <td><span class="badge badge-warning">{{ ticket.status }}</span></td>
-                                    <td>{{ ticket.assigned_to|capfirst }}</td>
-                                    <td>{{ ticket.accepted_at }}</td>
-                                    <td>
-                                        {% if "Admin" in role or user.is_staff or "support" in role and ticket.user != user %}
-                                            <a href="{% url 'ticket_close' ticket.id %}">
-                                                <button class="btn btn-sm btn-danger">Close</button>
-
-                                            </a>
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ ticket.title }}</td>
+                                <td>{{ ticket.user|capfirst }}</td>
+                                <td><span class="badge badge-status-pending rounded-pill">{{ ticket.status }}</span>
+                                </td>
+                                <td>{{ ticket.assigned_to|capfirst }}</td>
+                                <td>{{ ticket.accepted_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        {% if 'Admin' in role or 'support' in role or user.is_superuser %}
+                                            <a href="{% url 'ticket_close' ticket.id %}"
+                                               class="btn btn-action btn-close-ticket">Close</a>
                                         {% endif %}
-                                        <a href="{% url 'ticket_detail' ticket.id %}">
-                                            <button class="btn btn-sm btn-primary">View</button>
-
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endif %}
+                                        <a href="{% url 'ticket_detail' ticket.id %}" class="btn btn-action btn-view">View</a>
+                                    </div>
+                                </td>
+                            </tr>
                         {% endfor %}
                     {% else %}
-                        <td colspan="8" class="text-center h3 text-danger"> No tickets</td>
+                        <tr>
+                            <td colspan="7" class="text-center h5 text-danger">No pending tickets.</td>
+                        </tr>
                     {% endif %}
-
                     </tbody>
                 </table>
             </div>
         </div>
 
         <!-- Closed Tickets -->
-        <div class="card">
-            <div class="card-header bg-secondary text-white">
-                Closed Tickets
+        <div class="card shadow-lg rounded-4">
+            <div class="card-header rounded-top-4 card-header-center">
+                <i class="bi bi-check2-circle me-2"></i>Closed Tickets
             </div>
             <div class="card-body">
-                <table class="table table-hover">
+                <table class="table table-hover table-dark">
                     <thead>
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">Title</th>
-                        <th scope="col">Description</th>
-                        <th scope="col">owner</th>
+                        <th scope="col">Owner</th>
                         <th scope="col">Status</th>
-                        <th scope="col">Closed at</th>
-                        <th scope="col">Closed by</th>
+                        <th scope="col">Closed At</th>
+                        <th scope="col">Closed By</th>
                         <th scope="col">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% if closed_tickets %}
                         {% for ticket in closed_tickets %}
-                            {% if 'Closed' in ticket.status %}
-                                <tr>
-                                    <th scope="row">{{ forloop.counter }}</th>
-                                    <td>{{ ticket.title }}</td>
-                                    <td>{{ ticket.description }}</td>
-                                    <td>{{ ticket.user }}</td>
-                                    <td><span class="badge badge-danger">{{ ticket.status }}</span></td>
-                                    <td>{{ ticket.closed_at }}</td>
-                                    <td>{{ ticket.closed_by|capfirst }}</td>
-                                    <td>
-                                        <a href="{% url 'ticket_detail' ticket.id %}">
-                                            <button class="btn btn-sm btn-primary">View</button>
-
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endif %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ ticket.title }}</td>
+                                <td>{{ ticket.user|capfirst }}</td>
+                                <td><span class="badge badge-status-closed rounded-pill">{{ ticket.status }}</span></td>
+                                <td>{{ ticket.closed_at|date:"M d, Y" }}</td>
+                                <td>{{ ticket.closed_by|capfirst }}</td>
+                                <td>
+                                    <a href="{% url 'ticket_detail' ticket.id %}"
+                                       class="btn btn-action btn-view">View</a>
+                                </td>
+                            </tr>
                         {% endfor %}
                     {% else %}
-                        <td colspan="8" class="text-center h3 text-danger"> No tickets</td>
+                        <tr>
+                            <td colspan="7" class="text-center h5 text-danger">No closed tickets.</td>
+                        </tr>
                     {% endif %}
-
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-    <style>
-    .card-body  {
-        max-height: 250px;
-        overflow: auto;
-    }
-    </style>
 {% endblock %}
